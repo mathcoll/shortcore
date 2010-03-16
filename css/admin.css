@@ -1,0 +1,104 @@
+body {
+	margin: 0 5px;
+	padding: 0;
+}
+a.showTags, a.removeTag
+{
+	text-decoration: none;
+	color: red;
+}
+h2 {
+	margin: 0;
+	padding: 0;
+}
+h2 a {
+	font-size: 32px;
+	color: #991111;
+	text-decoration: none;
+}
+div.head {
+	position: fixed;
+	margin: 0 0 30px 0;
+	background: #fff;
+	padding: 0;
+	width: 100%;
+}
+#baseline {
+	font-size: 18px;
+	color: #000;
+}
+#buttons {
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	margin: 0 auto;
+	padding: 0;
+	background: #fff;
+	width: 100%;
+}
+#buttons img {
+	border: 0;
+}
+#twitter a img, #identica a img, #validator a img {
+	height:32px;
+}
+div#tags 
+{
+	display: none;
+	left:50%;
+	top:50%;
+	position:fixed;
+	width: 300px;
+	height: 50px;
+	border: 1px solid #000;
+	background: #fff;
+	padding: 10px;
+}
+div#tags h2
+{
+	margin: 0;
+}
+div#tags a
+{
+	text-align: right;
+	float: right;
+	text-decoration: none;
+}
+div#content
+{
+	padding: 80px 0;
+}
+div#content table tr
+{
+	padding: 0;
+	display: table-row;
+}
+div#content table tr.header
+{
+	display: table-header;
+	font-weight: bold;
+	background: #bababa;
+}
+div#content table tr:hover
+{
+	background: #cdcdcd;
+}
+div#content table tr td
+{
+	display:table-cell;
+	overflow: hidden;
+	padding: 5px 0;
+}
+div#content table tr td.counter
+{
+	width: 20px;
+	font-weight: bold;
+}
+div#content table tr td.title
+{
+	width: 400px;
+}
+div#content table tr td.tags
+{
+	width: 300px;
+}

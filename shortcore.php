@@ -86,6 +86,29 @@ class Shortcore {
         return $result;
     }
 
+    /*
+     */
+    function addTags($shortcore_id, $tags) {
+		foreach($tags AS $tag)
+		{
+			$tag = trim($tag);
+			$sql = "INSERT INTO tags (shortcore_id, value) VALUES (:shortcore_id, :value)";
+			//print $sql;
+			$q = $this->exec($sql, array(':shortcore_id' => $shortcore_id, ':value' => $tag));
+		}
+        return true;
+    }
+
+    /*
+     */
+    function removeTag($shortcore_id, $tag) {
+		$tag = trim($tag);
+		$sql = "DELETE FROM tags WHERE shortcore_id=:shortcore_id AND value=:tag";
+		//print $sql;
+		$q = $this->exec($sql, array(':shortcore_id' => $shortcore_id, ':tag' => $tag));
+      return true;
+    }
+
     /**
      * Redirects to the shortened url
      * @param string $id what to look up
@@ -103,14 +126,35 @@ class Shortcore {
             $counter = intval($result['counter']) + 1;
             $sql_update  = sprintf('UPDATE %s SET counter="%s" WHERE id=:id;', $this->cfg['table'], $counter);
             $p = $this->exec($sql_update, array(':id' => $id));
+			
+            $sql_insert = 'INSERT INTO clicks (shortcore_id, ip, date, user_agent, referer) VALUES (:id, :ip, :time, :user_agent, :referer)';
+            $insert = $this->exec(
+				$sql_insert,
+				array(
+					':id'				=> $id,
+					':ip'				=> $_SERVER['REMOTE_ADDR'],
+					':time'				=> time(),
+					':user_agent'		=> $_SERVER["HTTP_USER_AGENT"],
+					':referer'			=> $_SERVER["HTTP_REFERER"]
+				)
+			);
 
             if ($preview) {
                 $link1 = sprintf('<a href="%s_%s">%s_%s</a>', $this->cfg['home'], $id, $this->cfg['home'], $id);
                 $link2 = sprintf('<a href="%s">%s</a>', $result['url'], $result['url']);
-                $text = sprintf('The link you clicked on, <em>%s</em>, is a redirect to <strong>%s</strong>,<br />'.
-                                ' was shortened on <em>%s</em> and has been clicked %s times.', 
-                                $link1, $link2, date('d.m.Y H:i', $result['created']), $counter);
-                echo sprintf($this->cfg['tpl_body'], $text);
+                $text = sprintf(
+	                'Le lien <em>%s</em>, est une url r&eacute;duite redirigeant vers <strong>%s</strong>,<br />'.
+	                'Url r&eacute;duite le <em>%s</em>, cliqu&eacute;e %s fois.<br />'.
+	                'Vous allez &ecirc;tre redirig&eacute; automatiquement dans 4 secondes...'.
+	                '<meta http-equiv="refresh" content="4;url=%s" />', 
+	                $link1,
+	                $link2,
+	                date('d.m.Y H:i', $result['created']),
+	                $counter,
+	                $result['url']
+                );
+                echo sprintf($this->cfg['tpl_body'], stripslashes($result['title']), stripslashes($result['title']), $text);
+                exit;
             } else {
                 $this->page($result['url']);
             }
@@ -127,12 +171,14 @@ class Shortcore {
         $time = time();
         if (is_null($id)) {
             $id = $this->randomId();
+			$id = $this->clean($id);
             $result = $this->getResult($id);
             while (false !== $result) {
                 $id = $this->randomId();
                 $result = $this->getResult($id);
             }
         } else {
+			$id = $this->clean($id);
             $result = $this->getResult($id);
 
             while (false !== $result) {
@@ -149,8 +195,7 @@ class Shortcore {
         if (is_null($title)) {
             $title = 'untitled';
         }
-        $sql_insert = sprintf('INSERT INTO %s VALUES(:id, :url, :title, 0, "%s");', 
-                                $this->cfg['table'], $time);
+        $sql_insert = sprintf('INSERT INTO %s VALUES(:id, :url, :title, 0, "%s");', $this->cfg['table'], $time);
         $this->exec($sql_insert, array(':id' => $id, ':url' => $url, ':title' => $title));
         $this->page($cfg['home'].'_'.$id.'_');
     }
@@ -194,6 +239,14 @@ class Shortcore {
                 $_id = $_GET['id'];
             }
         }
+        if (isset($_POST['action']) && ($_POST['action'] == "addTags")) {
+            $this->addTags($_POST["shortcore_id"], split(",", $_POST["tagslist"]));
+            exit;
+        }
+        if (isset($_POST['action']) && ($_POST['action'] == "removeTag")) {
+            $this->removeTag($_POST["shortcore_id"], $_POST["tag"]);
+            exit;
+        }
 
         // writing
         if (!is_null($_url)) {
@@ -210,12 +263,12 @@ class Shortcore {
         if (!is_null($_help)) {
             
             $bookmarklet = <<<BML
-javascript:foo=prompt('id?');location.href='%shortcore.php?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title)+'&amp;id='+foo
+javascript:foo=prompt('id?');location.href='%sshortcore.php?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title)+'&amp;id='+foo
 BML;
             $bookmarklet = sprintf($bookmarklet, $this->cfg['home']);
             $link = sprintf('<a href="%s">shorten</a>', $bookmarklet);
 
-            $text = sprintf('<p>Powered by Shortcore v. %s</p>Bookmarklet: %s', $this->cfg['version'], $link);
+            $text = sprintf('<p>Powered by Shortcore v. %s</p>Bookmarklet: %s', $this->version, $link);
 
             echo sprintf($this->cfg['tpl_body'],$text);
             exit;
@@ -260,11 +313,21 @@ BML;
     }
 
     /**
+     */
+    function clean($str) {
+		$clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $str);
+		$clean = strtolower(trim($clean, '-'));
+		$clean = preg_replace("/[\/_|+ -]+/", '-', $clean);
+
+		return $clean;
+    }
+
+    /**
      * Debug wrapper to error_log()
      * @param mixed $arg what to show
      */
     function _e($arg) {
-        error_log('(sho) '.$arg);
+        error_log('(shortcore) '.$arg);
     }
 }
 ?>

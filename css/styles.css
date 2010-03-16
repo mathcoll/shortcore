@@ -1,0 +1,46 @@
+#page {
+	width: 70%;
+	margin: auto;
+	border: 2px solid #333333;
+	padding: 10px;
+	top: 20%;
+	left: 50%;
+	margin-top: 0;
+	margin-left: -35%;
+	position: absolute;
+}
+#page div.title {
+	padding: 0 10px;
+}
+#page div.title h1 {
+	font-size: 22px;
+}
+#page div.table {
+	margin: auto;
+	padding: 10px;
+}
+h2 {
+	margin: 0;
+	padding: 0;
+}
+h2 a {
+	font-size: 32px;
+	color: #991111;
+	text-decoration: none;
+}
+#baseline {
+	font-size: 18px;
+	color: #000;
+}
+#buttons {
+	position: absolute;
+	bottom: 100px;
+	left: 100px;
+	margin: 0 auto;
+}
+#buttons img {
+	border: 0;
+}
+#twitter a img, #identica a img, #validator a img {
+	height:32px;
+}
