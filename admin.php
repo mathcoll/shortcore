@@ -2,6 +2,7 @@
 <head>
 	<title>Shortcore list</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
 	<link rel="stylesheet" href="./css/admin.css" media="screen" />
 	<script src="./js/sortable.js"></script>
 	<script src="./js/jquery-1.3.2.js"></script>
